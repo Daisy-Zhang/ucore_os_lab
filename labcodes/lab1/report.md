@@ -229,3 +229,84 @@ seta 20.1 -> seta 20.2 -> protcseg -> bootmain -> readsect ->(static) inline voi
 
 ## 练习3：分析bootloader进入保护模式的过程
 
+答：分析目录`lab1/boot/bootasm.S`中的`bootasm.S`文件：
+实模式下运行`bootloader`的程序起始指令之前，将数据段，代码段段选择子置为0x8和0x10，以及置保护模式标志位：
+
+```
+.set PROT_MODE_CSEG,        0x8                     # kernel code segment selector
+.set PROT_MODE_DSEG,        0x10                    # kernel data segment selector
+.set CR0_PE_ON,             0x1                     # protected mode enable flag
+```
+
+开始执行bootloader，对DS，ES，SS寄存器赋初值，此时处于实模式：
+
+```
+.globl start
+start:
+.code16                                             # Assemble for 16-bit mode
+    cli                                             # Disable interrupts
+    cld                                             # String operations increment
+
+    # Set up the important data segment registers (DS, ES, SS).
+    xorw %ax, %ax                                   # Segment number zero
+    movw %ax, %ds                                   # -> Data Segment
+    movw %ax, %es                                   # -> Extra Segment
+    movw %ax, %ss           
+```
+
+为了能够从实模式转为保护模式，需要将A20使能，具体使能方法是：与键盘控制器的一个输出做`与`操作（键盘控制器8024），从而使访问内存时不出现`回卷`现象，达到能够访问4GB内存的目的，这段代码如下：
+
+```
+seta20.1:
+    inb $0x64, %al                                  # Wait for not busy(8042 input buffer empty).
+    testb $0x2, %al
+    jnz seta20.1
+
+    movb $0xd1, %al                                 # 0xd1 -> port 0x64
+    outb %al, $0x64                                 # 0xd1 means: write data to 8042's P2 port
+
+seta20.2:
+    inb $0x64, %al                                  # Wait for not busy(8042 input buffer empty).
+    testb $0x2, %al
+    jnz seta20.2
+
+    movb $0xdf, %al                                 # 0xdf -> port 0x60
+    outb %al, $0x60                                 # 0xdf = 11011111, means set P2's A20 bit(the 1 bit) to 1
+
+    lgdt gdtdesc
+    movl %cr0, %eax
+    orl $CR0_PE_ON, %eax
+    movl %eax, %cr0
+
+    # Jump to next instruction, but in 32-bit code segment.
+    # Switches processor into 32-bit mode.
+    ljmp $PROT_MODE_CSEG, $protcseg
+```
+
+由上不难发现除了使能A20之外，在从实模式跳转到保护模式的过程中还用到了GDT表，GDT表初始化的过程为分别为代码段和数据段设置描述符：
+
+```
+# Bootstrap GDT
+.p2align 2                                          # force 4 byte alignment
+gdt:
+    SEG_NULLASM                                     # null seg
+    SEG_ASM(STA_X|STA_R, 0x0, 0xffffffff)           # code seg for bootloader and kernel
+    SEG_ASM(STA_W, 0x0, 0xffffffff)                 # data seg for bootloader and kernel
+
+gdtdesc:
+    .word 0x17                                      # sizeof(gdt) - 1
+    .long gdt                                       # address gdt
+```
+
+这样就完成了从实模式到保护模式的切换，之后再初始化栈指针和段寄存器，然后再调用bootmain：
+
+```
+    # Set up the stack pointer and call into C. The stack region is from 0--start(0x7c00)
+    movl $0x0, %ebpb
+    movl $start, %esp
+    call bootmain
+```
+
+
+
+## 练习4：分析bootloader加载ELF和OS的过程。
