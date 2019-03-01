@@ -310,3 +310,5 @@ gdtdesc:
 
 
 ## 练习4：分析bootloader加载ELF和OS的过程。
+
+答：
