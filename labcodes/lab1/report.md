@@ -166,3 +166,46 @@ i386-elf-ld -m    elf_i386 -nostdlib -N -e start -Ttext 0x7C00 obj/boot/bootasm.
 
 ## 练习2：使用qemu执行并调试lab1中软件
 
+### 1. 从CPU加电后执行的第一条指令开始，单步跟踪BIOS的执行。
+
+答：在`lab1/tools`目录下找到文件`gdbinit`,然后对该gdb配置文件进行更改如下：
+
+```
+define hook-stepi
+x/2i $pc
+end
+
+set architecture i386
+target remote :1234
+```
+
+其中：
+
+* 前三行：使用stepi指令查看执行的下一行代码地址前进行强制反汇编。
+* set architecture i386：使用 i386 CPU去执行指令。
+* target remote ：1234：qemu与gdb用网络端口1234进行通讯。
+
+然后终端执行：`make debug`进入debug模式，在debug模式下使用命令：`stepi`，即可一步步跟踪当前执行到的代码并可以看到其反汇编后的汇编码。
+
+### 2. 在初始化位置0x7c00设置实地址断点，测试断点正常。
+
+答：在`lab1/tools`目录下找到文件`gdbinit`,然后在上一问的基础上继续添加配置代码：
+
+```
+break *0x7c00
+continue
+x/5i $pc
+```
+
+其中：
+
+* break *0x7c00：在地址0x7c00处设置断点。
+* continue：继续执行。
+* x/5i $pc：打印从pc寄存器开始的5条汇编指令。
+
+使用`make debug`指令执行后结果如下：
+
+![result](/Users/macbookair/Desktop/大三下/操作系统/ucore_os_lab/labcodes/lab1/report_image/exercise2.2.png)
+
+### 3. 从0x7c00开始跟踪代码执行，单步反汇编代码与bootasm.S和bootblock.asm进行比较。
+
