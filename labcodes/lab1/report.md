@@ -209,3 +209,23 @@ x/5i $pc
 
 ### 3. 从0x7c00开始跟踪代码执行，单步反汇编代码与bootasm.S和bootblock.asm进行比较。
 
+答：先找到`lab1/boot/bootasm.S`以及`lab1/obj/bootblock.asm`文件，两个文件中均为汇编码，不同点是后者将汇编码进行了一些靠近底层的优化变动以及其带有执行地址。
+
+然后执行`make debug`，通过`stepi`命令将逐步得到的结果与上述两个文件进行比较发现整个运行过程如下：
+
+* 把每条指令与上述两个文件中的指令对比可以得到最终的执行顺序(以bootblock.asm中的函数为标志)：start -> 
+
+seta 20.1 -> seta 20.2 -> protcseg -> bootmain -> readsect ->(static) inline void -> 0x7ccc
+
+* 在运行到`bootmain`之前，所有指令执行顺序与bootblock.asm中一致，在其之后由于涉及到一些跳转等指令导致执行顺序发生了变化。
+
+### 4. 自己找一个bootloader或内核中的代码位置设置断点并进行测试。
+
+答：通过查看`lab1/obj/bootblock.asm`文件，选择在bootmain函数段的比较靠前的一个地址`0x7cd4`设置断点进行调试。设置断点方法同上述第二个小练习，设置断点之后直接`make qemu`依旧无法成功运行程序，通过`make debug`可以正确看到程序在0x7cd4处中断，运行截图如下：
+
+![](/Users/macbookair/Desktop/大三下/操作系统/ucore_os_lab/labcodes/lab1/report_image/exercise2.4.png)
+
+
+
+## 练习3：分析bootloader进入保护模式的过程
+
