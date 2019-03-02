@@ -306,16 +306,24 @@ print_stackframe(void) {
      uint32_t ebp = read_ebp();
      uint32_t eip = read_eip();
 
-     for(int i = 0; i < STACKFRAME_DEPTH; i ++) {
-         printf("ebp: %u", ebp);
-         printf("eip: %u", eip);
+     int i;
+     for(i = 0; i < STACKFRAME_DEPTH; i ++) {
+	cprintf("ebp: 0x%08x ", ebp);
+	cprintf("eip: 0x%08x ", eip);
+	
+	int j;       
+	cprintf("args: ");
+	uint32_t *args = (uint32_t *)ebp + 2;	// 由ebp偏移两个单位得到最后入栈的参数地址
+	for(j = 0; j < 4; j ++) {
+	    cprintf("0x%08x ", args[j]);        
+	}
+        cprintf("\n");
 
-        for(int j = 0; j <= 4; j ++) {
-
-        }
-        printf("\n");
-
-        print_debuginfo(eip);
+        print_debuginfo(eip - 1);
+	
+	// 分清地址和值
+	eip = ((uint32_t *)ebp + 1)[0];
+	ebp = ((uint32_t *)ebp)[0];
      }
 }
 
