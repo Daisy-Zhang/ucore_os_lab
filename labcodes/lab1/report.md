@@ -402,3 +402,45 @@ bootmain(void) {
 
 ## 练习5：实现函数调用堆栈跟踪函数
 
+答：代码实现如下：
+
+```
+void
+print_stackframe(void) {
+    uint32_t ebp = read_ebp();		// 得到当前ebp寄存器值
+    uint32_t eip = read_eip();		// 得到当前eip寄存器值
+
+    int i;
+    for(i = 0; i < STACKFRAME_DEPTH; i ++) {
+	cprintf("ebp: 0x%08x ", ebp);
+	cprintf("eip: 0x%08x ", eip);
+	
+	int j;       
+	cprintf("args: ");
+	uint32_t *args = (uint32_t *)ebp + 2;	// 由ebp偏移两个单位得到最后入栈的参数地址
+	for(j = 0; j < 4; j ++) {
+	    cprintf("0x%08x ", args[j]);        
+	}
+        cprintf("\n");
+
+        print_debuginfo(eip - 1);
+	
+	// 分清地址和值
+	eip = ((uint32_t *)ebp + 1)[0];
+	ebp = ((uint32_t *)ebp)[0];
+     }
+}
+```
+
+输出结果截图如下：
+
+![](/Users/macbookair/Desktop/大三下/操作系统/ucore_os_lab/labcodes/lab1/report_image/exercise5.png)
+
+输出结果与题干所给相似，以下解释最后一行的各个参数：
+
+最后一行应该为最外层的调用函数，可以从打印语句看到其下一层为函数`kern_init`，故该层函数应该为`bootmain`函数，第一个参数为`ebp`寄存器中的值，此时由于起始地址为0x7c00，故调用`bootmain`后会push入栈一次，导致ebp值为0x7bf8，第二个值为`eip`寄存器里的值，其为将要执行的指令的地址（也就是该层函数执行完后的返回地址），打印信息之后依次为此时传入的参数。
+
+
+
+## 练习6：完善中断初始化和处理。
+
