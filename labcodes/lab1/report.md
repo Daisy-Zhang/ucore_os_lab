@@ -311,4 +311,94 @@ gdtdesc:
 
 ## 练习4：分析bootloader加载ELF和OS的过程。
 
-答：
+答：在`lab1/boot/bootmain.c`文件下进行相关分析：
+
+1. 由于操作系统是存在硬盘(Disk)上的，所以第一步是访问`disk`，从其中读取出操作系统，由于硬盘是由扇区存放，故按照一个个扇区进行读取，首先有等待disk准备读取数据：
+
+```
+/* waitdisk - wait for disk ready */
+static void
+waitdisk(void) {
+    while ((inb(0x1F7) & 0xC0) != 0x40)
+        /* do nothing */;
+}
+```
+
+2. 然后由于disk上是扇区组成，故应按照扇区读取，将读取的数据存放在dst地址：
+
+```
+/* readsect - read a single sector at @secno into @dst */
+static void
+readsect(void *dst, uint32_t secno) {
+    // wait for disk to be ready
+    waitdisk();
+
+    outb(0x1F2, 1);                         // count = 1
+    outb(0x1F3, secno & 0xFF);
+    outb(0x1F4, (secno >> 8) & 0xFF);
+    outb(0x1F5, (secno >> 16) & 0xFF);
+    outb(0x1F6, ((secno >> 24) & 0xF) | 0xE0);
+    outb(0x1F7, 0x20);                      // cmd 0x20 - read sectors
+
+    // wait for disk to be ready
+    waitdisk();
+
+    // read a sector
+    insl(0x1F0, dst, SECTSIZE / 4);
+}
+```
+
+3. 利用已经写好的扇区读取的函数写出加载任意大小的disk数据到内存的函数：
+
+```
+static void
+readseg(uintptr_t va, uint32_t count, uint32_t offset) {
+    uintptr_t end_va = va + count;
+
+    // round down to sector boundary
+    va -= offset % SECTSIZE;
+
+    // translate from bytes to sectors; kernel starts at sector 1
+    uint32_t secno = (offset / SECTSIZE) + 1;
+
+    // If this is too slow, we could read lots of sectors at a time.
+    // We'd write more to memory than asked, but it doesn't matter --
+    // we load in increasing order.
+    for (; va < end_va; va += SECTSIZE, secno ++) {
+        readsect((void *)va, secno);
+    }
+}
+```
+
+4. bootmain启动时，由于ELF格式的文件结构为elf header加上各种program segment，elf header中存下了该elf文件的一些基本信息以及各个program segment的数量，偏移量等信息，因此先通过读取elf header，再读取每个segment，然后调用elf的入口：
+
+```
+void
+bootmain(void) {
+    // read the 1st page off disk
+    readseg((uintptr_t)ELFHDR, SECTSIZE * 8, 0);
+
+    // is this a valid ELF?
+    if (ELFHDR->e_magic != ELF_MAGIC) {
+        goto bad;
+    }
+
+    struct proghdr *ph, *eph;
+
+    // load each program segment (ignores ph flags)
+    ph = (struct proghdr *)((uintptr_t)ELFHDR + ELFHDR->e_phoff);
+    eph = ph + ELFHDR->e_phnum;
+    for (; ph < eph; ph ++) {
+        readseg(ph->p_va & 0xFFFFFF, ph->p_memsz, ph->p_offset);
+    }
+
+    // call the entry point from the ELF header
+    // note: does not return
+    ((void (*)(void))(ELFHDR->e_entry & 0xFFFFFF))();
+}
+```
+
+
+
+## 练习5：实现函数调用堆栈跟踪函数
+
