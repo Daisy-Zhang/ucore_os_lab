@@ -47,7 +47,7 @@ idt_init(void) {
       *     Notice: the argument of lidt is idt_pd. try to find it!
       */
 
-     // use SETGATE and __vectors[] set idt[256], kernel code segment
+     // use SETGATE and __vectors[] set idt[256], kernel code segment, 0-31 for exception, 32-255 for interrupt
     extern uintptr_t __vectors[];
     int i;
     for(i = 0; i <= 255; i ++) {
@@ -58,7 +58,10 @@ idt_init(void) {
             SETGATE(idt[i], 0, GD_KTEXT, __vectors[i], DPL_KERNEL);
         }
     }
-    lidt(&idt);
+    // switch for DPL_USER
+    SETGATE(idt[T_SWITCH_TOU], 0, GD_KTEXT, __vectors[T_SWITCH_TOU], DPL_USER);
+    // tell CPU
+    lidt(&idt_pd);
 }
 
 static const char *
