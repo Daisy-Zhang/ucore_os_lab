@@ -444,3 +444,5 @@ print_stackframe(void) {
 
 ## 练习6：完善中断初始化和处理。
 
+1. 答：`IDT`中每一个表项占`8`个字节，对于`Interrupt-gate descriptor`和`trap-gate descriptor`也就是中断和异常而言，其第1-2字节和第7-8字节代表偏移量`offset`，其第3-4字节代表选择`selector`，共同构成入口地址。
+2. 
