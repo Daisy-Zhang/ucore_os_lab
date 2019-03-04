@@ -445,4 +445,42 @@ print_stackframe(void) {
 ## 练习6：完善中断初始化和处理。
 
 1. 答：`IDT`中每一个表项占`8`个字节，对于`Interrupt-gate descriptor`和`trap-gate descriptor`也就是中断和异常而言，其第1-2字节和第7-8字节代表偏移量`offset`，其第3-4字节代表选择`selector`，共同构成入口地址。
-2. 
+
+2. 实现过程：按照提示`trap.c`文件中，`idt[256]`数组为待初始化的IDT，初始化使用定义的宏`SETGATE`，同时入口的偏移地址在`__vectors[]`中，段选择器选择定义的常量：内核代码段，`exception/interrupt`依照实验指导书后面所讲，`0-31`为异常，`32-255`为中断。最后依照要求调用`lidt()`传入参数`idt_pd`告知CPU，IDT的初始化已经完成。
+
+   代码如下：
+
+```
+void idt_init(void) {
+     // use SETGATE and __vectors[] set idt[256], kernel code segment, 0-31 for exception, 32-255 for interrupt
+    extern uintptr_t __vectors[];
+    int i;
+    for(i = 0; i <= 255; i ++) {
+        if(i <= 31) {
+            SETGATE(idt[i], 1, GD_KTEXT, __vectors[i], DPL_KERNEL);    
+        }
+        else {
+            SETGATE(idt[i], 0, GD_KTEXT, __vectors[i], DPL_KERNEL);
+        }
+    }
+    // switch for DPL_USER
+    SETGATE(idt[T_SWITCH_TOU], 0, GD_KTEXT, __vectors[T_SWITCH_TOU], DPL_USER);
+    // tell CPU
+    lidt(&idt_pd);
+}
+```
+
+3. 实现过程：使用全局变量`ticks`，由于该变量初始化为0，故每次进入该`trap`处理时，值加一，到`99`时即达到了100次，然后调用`print_ticks()`输出指定字符串并将全局变量归零。
+
+   代码如下：
+
+```
+ case IRQ_OFFSET + IRQ_TIMER:
+        ticks ++;
+        if(ticks == 99) {
+            print_ticks("100 ticks\n");
+            ticks = 0;
+        }
+        break;
+```
+
