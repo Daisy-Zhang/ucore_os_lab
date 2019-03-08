@@ -93,10 +93,10 @@
  *      Try to merge blocks at lower or higher addresses. Notice: This should
  *  change some pages' `p->property` correctly.
  */
-free_area_t free_area;
+free_area_t free_area;                      // 两个成员，一个list，一个total
 
-#define free_list (free_area.free_list)
-#define nr_free (free_area.nr_free)
+#define free_list (free_area.free_list)     // 用于存下free的blocks，每个block中有若干page
+#define nr_free (free_area.nr_free)         // 总共有多少page
 
 static void
 default_init(void) {
@@ -105,7 +105,7 @@ default_init(void) {
 }
 
 static void
-default_init_memmap(struct Page *base, size_t n) {
+default_init_memmap(struct Page *base, size_t n) {  // 初始化每一块block，相当于在list的每一项下面拉链，第一页存下size
     assert(n > 0);
     struct Page *p = base;
     for (; p != base + n; p ++) {
@@ -135,14 +135,14 @@ default_alloc_pages(size_t n) {
         }
     }
     if (page != NULL) {
-        list_del(&(page->page_link));
+        list_del(&(page->page_link));       // 先把找到的该block从list里面删掉
         if (page->property > n) {
             struct Page *p = page + n;
-            p->property = page->property - n;
-            list_add(&free_list, &(p->page_link));
+            p->property = page->property - n;   // 修改该block的free pages数量
+            list_add(&free_list, &(p->page_link));  // 将新的block加入到list中
     }
-        nr_free -= n;
-        ClearPageProperty(page);
+        nr_free -= n;                       // 更新总的free pages数
+        ClearPageProperty(page);            // 更新该block对应相关bit位
     }
     return page;
 }
