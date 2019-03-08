@@ -105,12 +105,13 @@ default_init(void) {
 }
 
 static void
-default_init_memmap(struct Page *base, size_t n) {  // 初始化每一块block，相当于在list的每一项下面拉链，第一页存下size
+default_init_memmap(struct Page *base, size_t n) {  // 初始化一块block，相当于在list的每一项下面拉链，第一页存下size
     assert(n > 0);
     struct Page *p = base;
     for (; p != base + n; p ++) {
-        assert(PageReserved(p));
-        p->flags = p->property = 0;
+        //assert(!PageReserved(p));
+        SetPageProperty(p);
+        p->property = 0;
         set_page_ref(p, 0);
     }
     base->property = n;
