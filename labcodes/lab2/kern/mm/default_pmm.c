@@ -140,7 +140,7 @@ default_alloc_pages(size_t n) {
             struct Page *p = page + n;
             p->property = page->property - n;   // 修改该block的free pages数量
             list_add(&free_list, &(p->page_link));  // 将新的block加入到list中
-    }
+        }
         nr_free -= n;                       // 更新总的free pages数
         ClearPageProperty(page);            // 更新该block对应相关bit位
         SetPageReserved(page);
@@ -158,14 +158,13 @@ default_free_pages(struct Page *base, size_t n) {
     while ((le = list_next(le)) != &free_list) {
         p = le2page(le, page_link);
         if (base >= p && base <= le2page(list_next(le), page_link)) {
-            list_add_after(&p, base);
+            list_add_after(&le, base);
             break;
         }
     }
     nr_free += n;
 
     // reset
-    //struct Page *p = base;
     p = base;
     for (; p != base + n; p ++) {
         assert(!PageReserved(p) && !PageProperty(p));
