@@ -303,7 +303,7 @@ print_stackframe(void) {
       *                   the calling funciton's ebp = ss:[ebp]
       */
 
-    uint32_t ebp = read_ebp();
+    /*uint32_t ebp = read_ebp();
     uint32_t eip = read_eip();
 
     int i;
@@ -323,6 +323,6 @@ print_stackframe(void) {
 	// 分清地址和值
 	eip = ((uint32_t *)ebp + 1)[0];
 	ebp = ((uint32_t *)ebp)[0];
-    }
+    }*/
 }
 
