@@ -139,6 +139,7 @@ default_alloc_pages(size_t n) {
         if (page->property > n) {
             struct Page *p = page + n;
             p->property = page->property - n;   // 修改该block的free pages数量
+            SetPageProperty(p);
             list_add(&free_list, &(p->page_link));  // 将新的block加入到list中
         }
         nr_free -= n;                       // 更新总的free pages数
