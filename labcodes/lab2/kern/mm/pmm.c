@@ -31,7 +31,7 @@
  * */
 static struct taskstate ts = {0};
 
-// virtual address of physicall page array
+// virtual address of physical page array
 struct Page *pages;
 // amount of physical memory (in pages)
 size_t npage = 0;
@@ -326,7 +326,7 @@ pmm_init(void) {
 // return vaule: the kernel virtual address of this pte
 pte_t *
 get_pte(pde_t *pgdir, uintptr_t la, bool create) {
-    /* LAB2 EXERCISE 2: YOUR CODE
+    /* LAB2 EXERCISE 2: 2016011364
      *
      * If you need to visit a physical address, please use KADDR()
      * please read pmm.h for useful macros
@@ -338,7 +338,7 @@ get_pte(pde_t *pgdir, uintptr_t la, bool create) {
      *   PDX(la) = the index of page directory entry of VIRTUAL ADDRESS la.
      *   KADDR(pa) : takes a physical address and returns the corresponding kernel virtual address.
      *   set_page_ref(page,1) : means the page be referenced by one time
-     *   page2pa(page): get the physical address of memory which this (struct Page *) page  manages
+     *   page2pa(page): get the physical address of memory which this (struct Page *) page manages
      *   struct Page * alloc_page() : allocation a page
      *   memset(void *s, char c, size_t n) : sets the first n bytes of the memory area pointed by s
      *                                       to the specified value c.
@@ -347,17 +347,23 @@ get_pte(pde_t *pgdir, uintptr_t la, bool create) {
      *   PTE_W           0x002                   // page table/directory entry flags bit : Writeable
      *   PTE_U           0x004                   // page table/directory entry flags bit : User can access
      */
-#if 0
-    pde_t *pdep = NULL;   // (1) find page directory entry
-    if (0) {              // (2) check if entry is not present
-                          // (3) check if creating is needed, then alloc page for page table
-                          // CAUTION: this page is used for page table, not for common data page
-                          // (4) set page reference
-        uintptr_t pa = 0; // (5) get linear address of page
-                          // (6) clear page content using memset
-                          // (7) set page directory entry's permission
+#if 1
+    pde_t *pdep = &pgdir[PDX(la)];   // (1) find page directory entry
+    struct Page *p = NULL;
+
+    if (*pdep & PTE_P == 0) {       // (2) entry is not present
+        if(create) {
+            p = alloc_page();       // (3) check if creating is needed, then alloc page for page table // CAUTION: this page is used for page table, not for common data page 
+        }
+        else {
+            return NULL;
+        }
+        set_page_ref(p, 1);              // (4) set page reference
+        uintptr_t pa = KADDR(page2pa(p));// (5) get linear address of page, first get physical address then get virtual address
+        memset(pa, 0, PGSIZE);           // (6) clear page content using memset
+        *pdep = pa | PTE_P | PTE_W | PTE_U;    // (7) set page directory entry's permission      
     }
-    return NULL;          // (8) return page table entry
+    return &((pte_t *)KADDR(PTE_ADDR(*pdep)))[PTX(la)];  // (8) return page table entry
 #endif
 }
 
