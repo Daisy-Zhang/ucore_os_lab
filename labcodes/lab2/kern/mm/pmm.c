@@ -402,9 +402,9 @@ page_remove_pte(pde_t *pgdir, uintptr_t la, pte_t *ptep) {      // ptep: page ta
      *   PTE_P           0x001                   // page table/directory entry flags bit : Present
      */
 //  #if 1
-    if (*ptep & PTE_P == 1) {                   //(1) check if this page table entry is present
-        struct Page *page = NULL;                  
-        page = pte2page(ptep);                  //(2) find corresponding page to pte
+    if (*ptep & PTE_P) {                   //(1) check if this page table entry is present
+        struct Page *page = NULL;                 
+        page = pte2page(*ptep);                  //(2) find corresponding page to pte
         int ref = page_ref_dec(page);                     //(3) decrease page reference
         if(ref == 0) {
             free_page(page);
