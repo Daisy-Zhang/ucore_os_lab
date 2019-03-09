@@ -51,15 +51,10 @@ idt_init(void) {
     extern uintptr_t __vectors[];
     int i;
     for(i = 0; i <= 255; i ++) {
-        if(i <= 31) {
-            SETGATE(idt[i], 1, GD_KTEXT, __vectors[i], DPL_KERNEL);    
-        }
-        else {
-            SETGATE(idt[i], 0, GD_KTEXT, __vectors[i], DPL_KERNEL);
-        }
+        SETGATE(idt[i], 0, GD_KTEXT, __vectors[i], DPL_KERNEL);    
     }
     // switch for DPL_USER
-    SETGATE(idt[T_SWITCH_TOU], 0, GD_KTEXT, __vectors[T_SWITCH_TOU], DPL_USER);
+    SETGATE(idt[T_SWITCH_TOK], 0, GD_KTEXT, __vectors[T_SWITCH_TOK], DPL_USER);
     // tell CPU
     lidt(&idt_pd);
 }

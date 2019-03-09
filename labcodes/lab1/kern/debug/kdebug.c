@@ -321,8 +321,8 @@ print_stackframe(void) {
     print_debuginfo(eip - 1);
 	
 	// 分清地址和值
-	eip = ((uint32_t *)ebp)[1];
+	eip = ((uint32_t *)ebp + 1)[0];
 	ebp = ((uint32_t *)ebp)[0];
-     }
+    }
 }
 
