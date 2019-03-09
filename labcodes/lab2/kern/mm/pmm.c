@@ -351,7 +351,7 @@ get_pte(pde_t *pgdir, uintptr_t la, bool create) {
     pde_t *pdep = &pgdir[PDX(la)];   // (1) find page directory entry
     struct Page *p = NULL;
 
-    if (!(*pdep & PTE_P)) {       // (2) entry is not present
+    if ((*pdep & PTE_P) == 0x0) {       // (2) entry is not present, 0 is not the same as 0x0, holy ****
         if(create) {
             if((p = alloc_page()) == NULL){return NULL;}       // (3) check if creating is needed, then alloc page for page table // CAUTION: this page is used for page table, not for common data page 
         }
