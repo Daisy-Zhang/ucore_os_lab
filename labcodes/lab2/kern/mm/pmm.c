@@ -363,7 +363,7 @@ get_pte(pde_t *pgdir, uintptr_t la, bool create) {
         memset(KADDR(pa), 0, PGSIZE);           // (6) clear page content using memset
         *pdep = pa | PTE_P | PTE_W | PTE_U;    // (7) set page directory entry's permission      
     }
-    return &((pte_t *)KADDR(PTE_ADDR(*pdep)))[PTX(la)];  // (8) return page table entry
+    return &((pte_t *)KADDR(PDE_ADDR(*pdep)))[PTX(la)];  // (8) return page table entry
 //  #endif
 }
 
