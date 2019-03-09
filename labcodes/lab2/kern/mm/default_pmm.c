@@ -110,13 +110,14 @@ default_init_memmap(struct Page *base, size_t n) {  // 初始化一块block，�
     struct Page *p = base;
     for (; p != base + n; p ++) {
         assert(PageReserved(p));
-        p->property = 0;
+	p -> flags = 0;
+        p -> property = 0;
         set_page_ref(p, 0);
     }
     base->property = n;
     SetPageProperty(base);
     nr_free += n;
-    list_add(&free_list, &(base->page_link));
+    list_add_before(&free_list, &(base->page_link));
 }
 
 static struct Page *
@@ -144,7 +145,6 @@ default_alloc_pages(size_t n) {
         }
         nr_free -= n;                       // 更新总的free pages数
         ClearPageProperty(page);            // 更新该block对应相关bit位
-        //SetPageReserved(page); // already done
     }
     return page;
 }
@@ -164,7 +164,6 @@ default_free_pages(struct Page *base, size_t n) {
     while (le != &free_list) {
         p = le2page(le, page_link);
         le = list_next(le);
-        // TODO: optimize
         if (base + base->property == p) {
             base->property += p->property;
             ClearPageProperty(p);
