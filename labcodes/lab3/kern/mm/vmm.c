@@ -367,8 +367,10 @@ do_pgfault(struct mm_struct *mm, uint32_t error_code, uintptr_t addr) {
 //#if 0
     /*LAB3 EXERCISE 1: 2016011364*/
     ptep = get_pte(mm -> pgdir, addr, 1);                       //(1) try to find a pte, if pte's PT(Page Table) isn't existed, then create a PT.
-    if (*ptep == 0) {
-        *ptep = pgdir_alloc_page(mm -> pgdir, addr, perm);      //(2) if the phy addr isn't exist, then alloc a page & map the phy addr with logical addr
+    if (*ptep == 0) {						// question: 0 or NULL the same result
+	//cprintf("phy addr is not exist\n");
+	struct Page *page = NULL;
+        page = pgdir_alloc_page(mm -> pgdir, addr, perm);      //(2) if the phy addr isn't exist, then alloc a page & map the phy addr with logical addr
     }
     else {
     /*LAB3 EXERCISE 2: 2016011364
@@ -384,6 +386,7 @@ do_pgfault(struct mm_struct *mm, uint32_t error_code, uintptr_t addr) {
     */
         if(swap_init_ok) {
             struct Page *page=NULL;
+	    //cprintf("swap_init_ok\n");
                                     //(1）According to the mm AND addr, try to load the content of right disk page
                                     //    into the memory which page managed.
                                     //(2) According to the mm, addr AND page, setup the map of phy addr <---> logical addr
