@@ -369,7 +369,7 @@ do_pgfault(struct mm_struct *mm, uint32_t error_code, uintptr_t addr) {
     ptep = get_pte(mm -> pgdir, addr, 1);                       //(1) try to find a pte, if pte's PT(Page Table) isn't existed, then create a PT.
     if (*ptep == 0) {						// question: 0 or NULL the same result
 	//cprintf("phy addr is not exist\n");
-	struct Page *page = NULL;
+	    struct Page *page = NULL;
         page = pgdir_alloc_page(mm -> pgdir, addr, perm);      //(2) if the phy addr isn't exist, then alloc a page & map the phy addr with logical addr
     }
     else {
