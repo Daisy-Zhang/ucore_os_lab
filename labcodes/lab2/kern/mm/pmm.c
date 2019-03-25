@@ -409,7 +409,8 @@ page_remove_pte(pde_t *pgdir, uintptr_t la, pte_t *ptep) {      // ptep: page ta
         if(ref == 0) {
             free_page(page);
         }                                       //(4) and free this page when page reference reachs 0
-        ptep = NULL;                            //(5) clear second page table entry
+        //ptep = NULL;                            //(5) clear second page table entry
+        *ptep = 0;
         tlb_invalidate(pgdir, la);              //(6) flush tlb
     }
 //  #endif

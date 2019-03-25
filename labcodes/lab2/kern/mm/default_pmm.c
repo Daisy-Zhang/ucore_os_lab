@@ -12,7 +12,7 @@
  *  Please refer to Page 196~198, Section 8.2 of Yan Wei Min's Chinese book
  * "Data Structure -- C programming language".
 */
-// LAB2 EXERCISE 1: YOUR CODE
+// LAB2 EXERCISE 1: 2016011364
 // you should rewrite functions: `default_init`, `default_init_memmap`,
 // `default_alloc_pages`, `default_free_pages`.
 /*
@@ -110,7 +110,7 @@ default_init_memmap(struct Page *base, size_t n) {  // 初始化一块block，�
     struct Page *p = base;
     for (; p != base + n; p ++) {
         assert(PageReserved(p));
-	p -> flags = 0;
+	    p -> flags = 0;
         p -> property = 0;
         set_page_ref(p, 0);
     }
