@@ -46,6 +46,8 @@ _fifo_map_swappable(struct mm_struct *mm, uintptr_t addr, struct Page *page, int
 {
     list_entry_t *head=(list_entry_t*) mm->sm_priv;
     list_entry_t *entry=&(page->pra_page_link);
+
+    list_init(entry);
  
     assert(entry != NULL && head != NULL);
     //record the page access situlation

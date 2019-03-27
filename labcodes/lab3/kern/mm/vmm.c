@@ -391,7 +391,7 @@ do_pgfault(struct mm_struct *mm, uint32_t error_code, uintptr_t addr) {
             int pi = page_insert(mm -> pgdir, page, addr, perm);    //(2) According to the mm, addr AND page, setup the map of phy addr <---> logical addr
             // swap-in 位暂且置1
             int sms = swap_map_swappable(mm, addr, page, 1);        //(3) make the page swappable. 
-            page -> pra_vaddr = addr;
+            page -> pra_vaddr = addr;				    // 巨坑
         }
         else {
             cprintf("no swap_init_ok but ptep is %x, failed\n",*ptep);
