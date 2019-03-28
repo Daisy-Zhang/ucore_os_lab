@@ -303,7 +303,11 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
      */
 
     //    1. call alloc_proc to allocate a proc_struct
-    proc = alloc_proc();
+    if((proc = alloc_proc()) == NULL) {
+        cprintf("alloc proc NULL\n");
+    }
+    proc -> pid = get_pid();
+    proc -> parent = current;
     //    2. call setup_kstack to allocate a kernel stack for child process
     if(setup_kstack(proc) != 0) {
         cprintf("set up kstack error\n");
@@ -317,11 +321,12 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
     //    5. insert proc_struct into hash_list && proc_list
     hash_proc(proc);
     list_add_after(&proc_list, &(proc->list_link));
+    nr_process ++;
     //    6. call wakeup_proc to make the new child process RUNNABLE
     wakeup_proc(proc);  // 未找到该函数
     //    7. set ret vaule using child proc's pid
-    proc -> pid = get_pid();
     ret = proc -> pid;
+
 fork_out:
     return ret;
 
