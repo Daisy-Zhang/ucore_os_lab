@@ -321,7 +321,7 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
     wakeup_proc(proc);  // 未找到该函数
     //    7. set ret vaule using child proc's pid
     proc -> pid = get_pid();
-    return proc -> pid;
+    ret = proc -> pid;
 fork_out:
     return ret;
 
