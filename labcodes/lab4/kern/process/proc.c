@@ -100,7 +100,7 @@ alloc_proc(void) {
      *       struct trapframe *tf;                       // Trap frame for current interrupt
      *       uintptr_t cr3;                              // CR3 register: the base addr of Page Directroy Table(PDT)
      *       uint32_t flags;                             // Process flag
-     *       char name[PROC_NAME_LEN + 1];               // Process name
+     *       char name[PROC_NAME_LENbb bb b m + 1];               // Process name
      */
     // 初始化清零操作
     proc -> state = PROC_UNINIT;
@@ -176,14 +176,14 @@ proc_run(struct proc_struct *proc) {
     if (proc != current) {
         bool intr_flag;
         struct proc_struct *prev = current, *next = proc;
-        local_intr_save(intr_flag);
+        local_intr_save(intr_flag);             // 使能关中断
         {
             current = proc;
             load_esp0(next->kstack + KSTACKSIZE);
             lcr3(next->cr3);
-            switch_to(&(prev->context), &(next->context));
+            switch_to(&(prev->context), &(next->context));      // context的赋值，执行现场的移交
         }
-        local_intr_restore(intr_flag);
+        local_intr_restore(intr_flag);          // 使能恢复中断e
     }
 }
 
