@@ -117,12 +117,16 @@ alloc_proc(void) {
     memset(&(proc -> context), 0, sizeof(proc -> context));
     proc -> flags = 0;
 
-     //LAB5 YOUR CODE : (update LAB4 steps)
+    //LAB5 2016011364 : (update LAB4 steps)
     /*
      * below fields(add in LAB5) in proc_struct need to be initialized	
      *       uint32_t wait_state;                        // waiting state
      *       struct proc_struct *cptr, *yptr, *optr;     // relations between processes
 	 */
+    proc -> wait_state = 0;
+    proc -> cptr = NULL;
+    proc -> yptr = NULL;
+    proc -> optr = NULL;
     }
     return proc;
 }
@@ -402,12 +406,23 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
      *   nr_process:   the number of process set
      */
 
+    // LAB5 2016011364 : (update LAB4 steps)
+    /* Some Functions
+    *    set_links:  set the relation links of process.  ALSO SEE: remove_links:  lean the relation links of process 
+    *    -------------------
+	*    update step 1: set child proc's parent to current process, make sure current process's wait_state is 0
+	*    update step 5: insert proc_struct into hash_list && proc_list, set the relation links of process
+    */
+
     //    1. call alloc_proc to allocate a proc_struct
     if((proc = alloc_proc()) == NULL) {
         cprintf("alloc proc NULL\n");
     }
     proc -> pid = get_pid();
     proc -> parent = current;
+    if(current -> wait_state != 0) {
+        panic("do fork in lab5: current -> wait_state must be 0.\n")
+    }
     //    2. call setup_kstack to allocate a kernel stack for child process
     if(setup_kstack(proc) != 0) {
         cprintf("set up kstack error\n");
@@ -420,20 +435,13 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
     copy_thread(proc, stack, tf);
     //    5. insert proc_struct into hash_list && proc_list
     hash_proc(proc);
-    list_add_after(&proc_list, &(proc->list_link));
-    nr_process ++;
+    set_links(proc);        // include following two lines' func
+    //list_add_after(&proc_list, &(proc->list_link));
+    //nr_process ++;
     //    6. call wakeup_proc to make the new child process RUNNABLE
     wakeup_proc(proc);  // 未找到该函数
     //    7. set ret vaule using child proc's pid
     ret = proc -> pid;
-
-	//LAB5 YOUR CODE : (update LAB4 steps)
-   /* Some Functions
-    *    set_links:  set the relation links of process.  ALSO SEE: remove_links:  lean the relation links of process 
-    *    -------------------
-	*    update step 1: set child proc's parent to current process, make sure current process's wait_state is 0
-	*    update step 5: insert proc_struct into hash_list && proc_list, set the relation links of process
-    */
 	
 fork_out:
     return ret;
@@ -508,7 +516,7 @@ do_exit(int error_code) {
  */
 static int
 load_icode(unsigned char *binary, size_t size) {
-    if (current->mm != NULL) {
+    if (current -> mm != NULL) {
         panic("load_icode: current->mm must be empty.\n");
     }
 
@@ -624,7 +632,7 @@ load_icode(unsigned char *binary, size_t size) {
     //(6) setup trapframe for user environment
     struct trapframe *tf = current->tf;
     memset(tf, 0, sizeof(struct trapframe));
-    /* LAB5:EXERCISE1 YOUR CODE
+    /* LAB5:EXERCISE1 2016011364
      * should set tf_cs,tf_ds,tf_es,tf_ss,tf_esp,tf_eip,tf_eflags
      * NOTICE: If we set trapframe correctly, then the user level process can return to USER MODE from kernel. So
      *          tf_cs should be USER_CS segment (see memlayout.h)
@@ -633,6 +641,13 @@ load_icode(unsigned char *binary, size_t size) {
      *          tf_eip should be the entry point of this binary program (elf->e_entry)
      *          tf_eflags should be set to enable computer to produce Interrupt
      */
+    tf -> tf_cs = USER_CS;
+    tf -> tf_ds = tf -> tf_es = tf -> tf_ss = USER_DS;
+    tf -> tf_esp = USTACKTOP;
+    tf -> tf_eip = elf -> e_entry;
+    // should be
+    tf -> tf_eflags = 1;            
+
     ret = 0;
 out:
     return ret;
