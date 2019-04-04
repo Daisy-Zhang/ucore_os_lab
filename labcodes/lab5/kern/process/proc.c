@@ -434,17 +434,8 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
     //    4. call copy_thread to setup tf & context in proc_struct
     copy_thread(proc, stack, tf);
     //    5. insert proc_struct into hash_list && proc_list
-    //hash_proc(proc);
-    //set_links(proc);        // include following two lines' func
-    bool intr_flag;
-    local_intr_save(intr_flag);
-    {
-        //proc->pid = get_pid();
-        hash_proc(proc);
-        set_links(proc);
-
-    }
-    local_intr_restore(intr_flag);
+    hash_proc(proc);
+    set_links(proc);        // include following two lines' func
     //list_add_after(&proc_list, &(proc->list_link));
     //nr_process ++;
     //    6. call wakeup_proc to make the new child process RUNNABLE
