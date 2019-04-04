@@ -421,7 +421,7 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
     proc -> pid = get_pid();
     proc -> parent = current;
     if(current -> wait_state != 0) {
-        panic("do fork in lab5: current -> wait_state must be 0.\n")
+        panic("do fork in lab5: current -> wait_state must be 0.\n");
     }
     //    2. call setup_kstack to allocate a kernel stack for child process
     if(setup_kstack(proc) != 0) {
