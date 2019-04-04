@@ -511,8 +511,8 @@ copy_range(pde_t *to, pde_t *from, uintptr_t start, uintptr_t end, bool share) {
          * (4) build the map of phy addr of  nage with the linear addr start
          */
         // char * should be
-        char *src_kvaddr = page2kva(page);
-        char *dst_kvaddr = page2kva(npage);
+        void *src_kvaddr = page2kva(page);
+        void *dst_kvaddr = page2kva(npage);
         memcpy(src_kvaddr, dst_kvaddr, PGSIZE);
         if(page_insert(ptep, npage, start, perm) != 0) {
             cprintf("page insert error in lab5!\n");
