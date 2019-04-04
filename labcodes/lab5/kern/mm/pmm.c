@@ -514,7 +514,7 @@ copy_range(pde_t *to, pde_t *from, uintptr_t start, uintptr_t end, bool share) {
         void *src_kvaddr = page2kva(page);
         void *dst_kvaddr = page2kva(npage);
         memcpy(dst_kvaddr, src_kvaddr, PGSIZE);
-        if(page_insert(ptep, npage, start, perm) != 0) {
+        if(page_insert(to, npage, start, perm) != 0) {
             cprintf("page insert error in lab5!\n");
         }
 

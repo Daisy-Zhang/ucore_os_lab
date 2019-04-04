@@ -418,7 +418,7 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
     if((proc = alloc_proc()) == NULL) {
         cprintf("alloc proc NULL\n");
     }
-    //proc -> pid = get_pid();
+    proc -> pid = get_pid();
     proc -> parent = current;
     if(current -> wait_state != 0) {
         panic("do fork in lab5: current -> wait_state must be 0.\n");
@@ -439,7 +439,7 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
     bool intr_flag;
     local_intr_save(intr_flag);
     {
-        proc->pid = get_pid();
+        //proc->pid = get_pid();
         hash_proc(proc);
         set_links(proc);
 
