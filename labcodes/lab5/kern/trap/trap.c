@@ -53,6 +53,9 @@ idt_init(void) {
       *     You don't know the meaning of this instruction? just google it! and check the libs/x86.h to know more.
       *     Notice: the argument of lidt is idt_pd. try to find it!
       */    
+     /* LAB5 2016011364 */ 
+     //you should update your lab1 code (just add ONE or TWO lines of code), let user app to use syscall to get the service of ucore
+     //so you should setup the syscall interrupt gate in here
     extern uintptr_t __vectors[];
     int i;
     for(i = 0; i <= 255; i ++) {
@@ -64,7 +67,8 @@ idt_init(void) {
         }  
     }
     // switch for DPL_USER
-    SETGATE(idt[T_SWITCH_TOK], 0, GD_KTEXT, __vectors[T_SWITCH_TOK], DPL_USER);
+    //SETGATE(idt[T_SWITCH_TOK], 0, GD_KTEXT, __vectors[T_SWITCH_TOK], DPL_USER);
+    SETGATE(idt[T_SYSCALL], 1, GD_KTEXT, __vectors[T_SYSCALL], DPL_USER);
     // tell CPU
     lidt(&idt_pd);
 }
@@ -230,10 +234,16 @@ trap_dispatch(struct trapframe *tf) {
          * (2) Every TICK_NUM cycle, you can print some info using a funciton, such as print_ticks().
          * (3) Too Simple? Yes, I think so!
          */
+        /* LAB5 2016011364 */
+        /* you should upate you lab1 code (just add ONE or TWO lines of code):
+         *    Every TICK_NUM cycle, you should set current process's current->need_resched = 1
+         */
         ticks ++;
         if(ticks == 99) {
             print_ticks("100 ticks\n");
             ticks = 0;
+            // lab5
+            current -> need_resched = 1;
         }
         break;
     case IRQ_OFFSET + IRQ_COM1:
@@ -244,7 +254,7 @@ trap_dispatch(struct trapframe *tf) {
         c = cons_getc();
         cprintf("kbd [%03d] %c\n", c, c);
         break;
-    //LAB1 CHALLENGE 1 : YOUR CODE you should modify below codes.
+    //LAB1 CHALLENGE 1 : 2016011364 you should modify below codes.
     case T_SWITCH_TOU:
     case T_SWITCH_TOK:
         panic("T_SWITCH_** ??\n");
