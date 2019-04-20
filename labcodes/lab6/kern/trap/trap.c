@@ -253,7 +253,7 @@ trap_dispatch(struct trapframe *tf) {
             current -> need_resched = 1;
         }*/
         // for lab6
-	assert(current != NULL);
+	    assert(current != NULL);
         sched_class_proc_tick(current);
         break;
     case IRQ_OFFSET + IRQ_COM1:

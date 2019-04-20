@@ -101,7 +101,7 @@ stride_init(struct run_queue *rq) {
       */
     list_init(&(rq->run_list));
     rq -> lab6_run_pool = NULL;
-    rq->proc_num = 0;
+    rq -> proc_num = 0;
 }
 
 /*
@@ -155,7 +155,7 @@ stride_dequeue(struct run_queue *rq, struct proc_struct *proc) {
       */
     assert(!list_empty(&(proc->run_link)) && proc->rq == rq);
     list_del_init(&(proc->run_link));
-    rq->proc_num --;
+    rq -> proc_num --;
 }
 /*
  * stride_pick_next pick the element from the ``run-queue'', with the
@@ -199,7 +199,7 @@ stride_pick_next(struct run_queue *rq) {
         target_proc -> lab6_stride += BIG_STRIDE / target_proc -> lab6_priority;
     else 
         target_proc -> lab6_stride = BIG_STRIDE;
-    return NULL;
+    return target_proc;
 }
 
 /*
