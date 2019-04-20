@@ -198,7 +198,7 @@ stride_pick_next(struct run_queue *rq) {
     if(target_proc -> lab6_priority != 0)
         target_proc -> lab6_stride += BIG_STRIDE / target_proc -> lab6_priority;
     else 
-        target_proc -> lab6_stride = BIG_STRIDE;
+        target_proc -> lab6_stride += BIG_STRIDE;
     return target_proc;
 }
 
