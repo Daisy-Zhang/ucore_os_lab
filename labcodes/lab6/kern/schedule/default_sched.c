@@ -189,7 +189,7 @@ stride_pick_next(struct run_queue *rq) {
     while (le != &rq->run_list)
     {
         tmp = le2proc(le, run_link);
-        if (target_proc -> lab6_stride > tmp -> lab6_stride)
+        if ((int32_t)(target_proc -> lab6_stride - tmp -> lab6_stride) > 0)
             target_proc = tmp;
         le = list_next(le);
     }
