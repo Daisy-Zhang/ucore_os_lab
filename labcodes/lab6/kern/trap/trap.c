@@ -246,13 +246,14 @@ trap_dispatch(struct trapframe *tf) {
 	     * sched_class_proc_tick
          */
         ticks ++;
-        if(ticks == 99) {
+        /*if(ticks == 99) {
             print_ticks("100 ticks\n");
             ticks = 0;
             // lab5
             current -> need_resched = 1;
-        }
+        }*/
         // for lab6
+	assert(current != NULL);
         sched_class_proc_tick(current);
         break;
     case IRQ_OFFSET + IRQ_COM1:
