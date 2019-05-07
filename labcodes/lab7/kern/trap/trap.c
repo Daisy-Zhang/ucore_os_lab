@@ -244,12 +244,14 @@ trap_dispatch(struct trapframe *tf) {
          * IMPORTANT FUNCTIONS:
 	     * sched_class_proc_tick
          */         
-        /* LAB7 YOUR CODE */
+        /* LAB7 2016011364 */
         /* you should upate you lab6 code
          * IMPORTANT FUNCTIONS:
 	     * run_timer_list
          */
-        ticks ++;
+        ticks ++;ticks ++;
+        assert(current != NULL);
+        run_timer_list();
         /*if(ticks == 99) {
             print_ticks("100 ticks\n");
             ticks = 0;
@@ -257,8 +259,8 @@ trap_dispatch(struct trapframe *tf) {
             current -> need_resched = 1;
         }*/
         // for lab6
-	    assert(current != NULL);
-        sched_class_proc_tick(current);
+	    //assert(current != NULL);
+        //sched_class_proc_tick(current);
         
         break;
     case IRQ_OFFSET + IRQ_COM1:
