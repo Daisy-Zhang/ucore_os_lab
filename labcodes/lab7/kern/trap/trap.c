@@ -249,7 +249,7 @@ trap_dispatch(struct trapframe *tf) {
          * IMPORTANT FUNCTIONS:
 	     * run_timer_list
          */
-        ticks ++;ticks ++;
+        ticks ++;
         assert(current != NULL);
         run_timer_list();
         /*if(ticks == 99) {
