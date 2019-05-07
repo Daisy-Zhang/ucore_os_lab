@@ -5,16 +5,17 @@
 #include <list.h>
 #include <memlayout.h>
 #include <sync.h>
+#include <proc.h>
+#include <sem.h>
 
 //pre define
 struct mm_struct;
 
-// the virtual continuous memory area(vma), [vm_start, vm_end), 
-// addr belong to a vma means  vma.vm_start<= addr <vma.vm_end 
+// the virtual continuous memory area(vma)
 struct vma_struct {
     struct mm_struct *vm_mm; // the set of vma using the same PDT 
-    uintptr_t vm_start;      // start addr of vma      
-    uintptr_t vm_end;        // end addr of vma, not include the vm_end itself
+    uintptr_t vm_start;      //    start addr of vma    
+    uintptr_t vm_end;        // end addr of vma
     uint32_t vm_flags;       // flags of vma
     list_entry_t list_link;  // linear list link which sorted by start addr of vma
 };
@@ -35,7 +36,9 @@ struct mm_struct {
     int map_count;                 // the count of these vma
     void *sm_priv;                 // the private data for swap manager
     int mm_count;                  // the number ofprocess which shared the mm
-    lock_t mm_lock;                // mutex for using dup_mmap fun to duplicat the mm
+    semaphore_t mm_sem;            // mutex for using dup_mmap fun to duplicat the mm 
+    int locked_by;                 // the lock owner process's pid
+
 };
 
 struct vma_struct *find_vma(struct mm_struct *mm, uintptr_t addr);
@@ -88,14 +91,18 @@ mm_count_dec(struct mm_struct *mm) {
 static inline void
 lock_mm(struct mm_struct *mm) {
     if (mm != NULL) {
-        lock(&(mm->mm_lock));
+        down(&(mm->mm_sem));
+        if (current != NULL) {
+            mm->locked_by = current->pid;
+        }
     }
 }
 
 static inline void
 unlock_mm(struct mm_struct *mm) {
     if (mm != NULL) {
-        unlock(&(mm->mm_lock));
+        up(&(mm->mm_sem));
+        mm->locked_by = 0;
     }
 }
 
