@@ -93,9 +93,11 @@ void phi_test_sema(i) /* i：哲学家号码从0到N-1 */
 
 void phi_take_forks_sema(int i) /* i：哲学家号码从0到N-1 */
 { 
+        // down() -> P()
         down(&mutex); /* 进入临界区 */
         state_sema[i]=HUNGRY; /* 记录下哲学家i饥饿的事实 */
         phi_test_sema(i); /* 试图得到两只叉子 */
+        // up() - > V()
         up(&mutex); /* 离开临界区 */
         down(&s[i]); /* 如果得不到叉子就阻塞 */
 }
@@ -103,6 +105,7 @@ void phi_take_forks_sema(int i) /* i：哲学家号码从0到N-1 */
 void phi_put_forks_sema(int i) /* i：哲学家号码从0到N-1 */
 { 
         down(&mutex); /* 进入临界区 */
+        // eating -> thinking : put CK back
         state_sema[i]=THINKING; /* 哲学家进餐结束 */
         phi_test_sema(LEFT); /* 看一下左邻居现在是否能进餐 */
         phi_test_sema(RIGHT); /* 看一下右邻居现在是否能进餐 */
@@ -181,9 +184,16 @@ void phi_test_condvar (i) {
 void phi_take_forks_condvar(int i) {
      down(&(mtp->mutex));
 //--------into routine in monitor--------------
-     // LAB7 EXERCISE1: YOUR CODE
+     // LAB7 EXERCISE1: 2016011364
      // I am hungry
      // try to get fork
+     state_condvar[i] = HUNGRY;
+     phi_test_condvar(i);
+     // dont get CK
+     if (state_condvar[i] != EATING) {
+          cprintf("phi_take_forks_condvar: %d is waiting (cond_wait)\n",i);
+          cond_wait(&mtp->cv[i]);
+    }
 //--------leave routine in monitor--------------
       if(mtp->next_count>0)
          up(&(mtp->next));
@@ -193,11 +203,13 @@ void phi_take_forks_condvar(int i) {
 
 void phi_put_forks_condvar(int i) {
      down(&(mtp->mutex));
-
 //--------into routine in monitor--------------
-     // LAB7 EXERCISE1: YOUR CODE
+     // LAB7 EXERCISE1: 2016011364
      // I ate over
      // test left and right neighbors
+     state_condvar[i] = THINKING;
+     phi_test_condvar(LEFT);
+     phi_test_condvar(RIGHT);
 //--------leave routine in monitor--------------
      if(mtp->next_count>0)
         up(&(mtp->next));
