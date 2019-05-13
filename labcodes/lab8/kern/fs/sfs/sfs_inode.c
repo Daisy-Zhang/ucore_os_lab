@@ -619,7 +619,7 @@ sfs_io_nolock(struct sfs_fs *sfs, struct sfs_inode *sin, void *buf, off_t offset
     } 
     //(2)
     size = SFS_BLKSIZE;
-    while (1) {
+    while (nblks != 0) {
         if ((ret = sfs_bmap_load_nolock(sfs, sin, blkno, &ino)) != 0) {
             goto out;
         }
@@ -630,9 +630,6 @@ sfs_io_nolock(struct sfs_fs *sfs, struct sfs_inode *sin, void *buf, off_t offset
         buf += size;
         blkno ++;
         nblks --;
-        if(nblks == 0) {
-            break;
-        }
     }  
     //(3)
     if ((size = endpos % SFS_BLKSIZE) != 0) {
