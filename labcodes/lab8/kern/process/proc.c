@@ -430,6 +430,37 @@ bad_files_struct:
     return ret;
 }
 
+//copy_fs&put_fs function used by do_fork in LAB8
+static int
+copy_fs(uint32_t clone_flags, struct proc_struct *proc) {
+    struct files_struct *filesp, *old_filesp = current->filesp;
+    assert(old_filesp != NULL);
+
+    if (clone_flags & CLONE_FS) {
+        filesp = old_filesp;
+        goto good_files_struct;
+    }
+
+    int ret = -E_NO_MEM;
+    if ((filesp = files_create()) == NULL) {
+        goto bad_files_struct;
+    }
+
+    if ((ret = dup_fs(filesp, old_filesp)) != 0) {
+        goto bad_dup_cleanup_fs;
+    }
+
+good_files_struct:
+    files_count_inc(filesp);
+    proc->filesp = filesp;
+    return 0;
+
+bad_dup_cleanup_fs:
+    files_destroy(filesp);
+bad_files_struct:
+    return ret;
+}
+
 //decrease the ref_count of files, and if ref_count==0, then destroy files_struct
 static void
 put_files(struct proc_struct *proc) {
